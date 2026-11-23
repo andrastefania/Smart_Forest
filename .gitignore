@@ -1,0 +1,4 @@
+zephyrproject/
+**/build/
+__pycache__/
+*.pyc

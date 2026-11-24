@@ -25,23 +25,41 @@ Embedded forest-monitoring prototype using **Zephyr RTOS** and **3 × Seeed Stud
 
 ```text
 Smart_Forest/
-├── README.md
 ├── .gitignore
+├── README.md
+│
 ├── docs/
 │   └── development_commands.md
+|   └── wiring.md
+│
 ├── firmware/
-│   └── sensor_node/
-│       ├── CMakeLists.txt
-│       ├── prj.conf
-│       ├── app.overlay
-│       └── src/main.c
-|   └──gateway/  
-└── zephyrproject/          # Local only; ignored by Git
+│   ├── sensor_node/
+│   │   ├── CMakeLists.txt
+│   │   ├── prj.conf
+│   │   ├── app.overlay
+│   │   │
+│   │   ├── include/
+│   │   │   ├── sensor_data.h
+│   │   │   └── dht11_sensor.h
+│   │   │
+│   │   └── src/
+│   │       ├── main.c
+│   │       ├── dht11_sensor.c
+│   │       ├── sensor_monitor.c
+│   │       └── alert.c
+│   │
+│   └── gateway/
+│       └── 
+│
+└── zephyrproject/   # Local only, ignored by Git
     ├── .venv/
+    ├── .west/
     ├── zephyr/
     ├── modules/
+    ├── build-hello/
     └── build-sensor/
 ```
+
 ## Development Branches
 
 - `main` – Stable project version

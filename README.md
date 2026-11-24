@@ -24,13 +24,14 @@ Embedded forest-monitoring prototype using **Zephyr RTOS** and **3 × Seeed Stud
 ## Project structure
 
 ```text
+
 Smart_Forest/
 ├── .gitignore
 ├── README.md
 │
 ├── docs/
-│   └── development_commands.md
-|   └── wiring.md
+│   ├── development_commands.md
+│   └── wiring.md
 │
 ├── firmware/
 │   ├── sensor_node/
@@ -39,25 +40,31 @@ Smart_Forest/
 │   │   ├── app.overlay
 │   │   │
 │   │   ├── include/
+│   │   │   ├── config.h
 │   │   │   ├── sensor_data.h
-│   │   │   └── dht11_sensor.h
+│   │   │   ├── dht11_sensor.h
+│   │   │   ├── mq2_sensor.h
+│   │   │   └── alert_logic.h
 │   │   │
 │   │   └── src/
 │   │       ├── main.c
 │   │       ├── dht11_sensor.c
+│   │       ├── mq2_sensor.c
 │   │       ├── sensor_monitor.c
+│   │       ├── alert_logic.c
 │   │       └── alert.c
 │   │
 │   └── gateway/
 │       └── 
 │
-└── zephyrproject/   # Local only, ignored by Git
+└── zephyrproject/             # Local only, ignored by Git
     ├── .venv/
     ├── .west/
     ├── zephyr/
     ├── modules/
     ├── build-hello/
     └── build-sensor/
+
 ```
 
 ## Development Branches
@@ -68,7 +75,26 @@ Smart_Forest/
 
 Features are developed separately and integrated through pull requests.
 
+## Sensor Node Implementation
+
+The sensor node firmware uses two independent Zephyr RTOS threads communicating through a message queue (`k_msgq`).
+
+- `sensor_monitor.c` – Periodically reads DHT11 and MQ-2, handling sensor failures independently.
+- `dht11_sensor.c` – Temperature and humidity acquisition.
+- `mq2_sensor.c` – Analog gas/smoke sensor acquisition using the ADC.
+- `sensor_data.h` – Shared sensor measurement structure and message queue declaration.
+- `config.h` – Centralized sampling interval, experimental thresholds, and sensor error constants.
+- `alert_logic.c` – Evaluates combined hazard conditions and determines the alert level.
+- `alert.c` – Receives sensor measurements, evaluates conditions, and reports alert status and diagnostic information.
+
+### Alert Levels
+
+| Level | Condition |
+|---|---|
+| NORMAL | No hazards detected; assessment complete |
+| WARNING | One hazard detected |
+| CRITICAL | Two or more hazards detected |
+| UNKNOWN | No confirmed hazards, but assessment incomplete |
+
 **Commands:** see [docs/development_commands.md](docs/development_commands.md).
 **Wiring:** see [docs/wiring.md](docs/wiring.md).
-
-**Safety:** MQ-2 needs 5 V power; never connect a 5 V signal directly to nRF52840 GPIO/ADC.

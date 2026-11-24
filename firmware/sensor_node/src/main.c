@@ -4,6 +4,5 @@
 
 int main(void)
 {
-    printk("Smart Forest Monitoring started\n");
     return 0;
 }

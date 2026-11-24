@@ -11,4 +11,6 @@ target_sources(app PRIVATE
     src/dht11_sensor.c
     src/sensor_monitor.c
     src/alert.c
+    src/mq2_sensor.c
+    src/alert_logic.c
 )

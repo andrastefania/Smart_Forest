@@ -3,30 +3,67 @@
 #include <zephyr/sys/printk.h>
 
 #include "sensor_data.h"
-
-#define WARNING_TEMP 35
-#define CRITICAL_TEMP 55
+#include "alert_logic.h"
+#include "config.h"
 
 void alert_thread(void)
 {
     struct sensor_data data;
-    const char *status;
 
     while (1) {
         if (k_msgq_get(&sensor_queue, &data, K_FOREVER) != 0) {
             continue;
         }
 
-        if (data.temperature >= CRITICAL_TEMP) {
-            status = "CRITICAL";
-        } else if (data.temperature >= WARNING_TEMP) {
-            status = "WARNING";
-        } else {
+        bool dht_ok = (data.temperature != DHT_ERROR_VALUE);
+        bool mq2_ok = (data.mq2_raw != MQ2_ERROR_VALUE);
+
+        struct alert_conditions conditions = {
+            .high_temperature = dht_ok &&
+                                data.temperature >= WARNING_TEMP,
+            .gas_detected = false,
+            .flame_detected = false,
+            .assessment_complete = false
+        };
+
+        struct alert_result result = evaluate_alert(&conditions);
+
+        const char *status;
+
+        switch (result.level) {
+        case ALERT_NORMAL:
             status = "NORMAL";
+            break;
+        case ALERT_WARNING:
+            status = "WARNING";
+            break;
+        case ALERT_CRITICAL:
+            status = "CRITICAL";
+            break;
+        default:
+            status = "UNKNOWN";
+            break;
         }
 
-        printk("Temperature: %.2f C | Humidity: %.2f %% | Status: %s\n",
-               data.temperature, data.humidity, status);
+        
+        const char *reason = result.causes.high_temperature
+                         ? "HIGH_TEMP" : "NONE";
+
+        if (dht_ok && mq2_ok) {
+            printk("T:%.2f H:%.2f G:%d S:%s R:%s\n",
+                data.temperature, data.humidity,
+                data.mq2_raw, status, reason);
+        } else if (dht_ok) {
+            printk("T:%.2f H:%.2f G:N/A S:%s R:%s\n",
+                data.temperature, data.humidity,
+                status, reason);
+        } else if (mq2_ok) {
+            printk("T:N/A H:N/A G:%d S:%s R:%s\n",
+                data.mq2_raw, status, reason);
+        } else {
+            printk("T:N/A H:N/A G:N/A S:%s R:%s\n",
+                   status, reason);
+        }
     }
 }
 

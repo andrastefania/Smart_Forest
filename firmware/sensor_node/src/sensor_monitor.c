@@ -1,29 +1,33 @@
 
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
 
 #include "sensor_data.h"
 #include "dht11_sensor.h"
+#include "mq2_sensor.h"
 
 K_MSGQ_DEFINE(sensor_queue, sizeof(struct sensor_data), 10, 4);
 
-/* Thread 1: Sensor Monitoring */
 void sensor_thread(void)
 {
     struct sensor_data data;
+    bool mq2_ready = (mq2_init() == 0);
 
     while (1) {
-        int ret = dht11_read(&data);
+        data.temperature = DHT_ERROR_VALUE;
+        data.humidity = DHT_ERROR_VALUE;
+        data.mq2_raw = MQ2_ERROR_VALUE;
 
-        if (ret == 0) {
-            if (k_msgq_put(&sensor_queue, &data, K_NO_WAIT) != 0) {
-                printk("[Sensor] Queue full\n");
+        dht11_read(&data);
+
+        if (mq2_ready) {
+            if (mq2_read(&data.mq2_raw) != 0) {
+                data.mq2_raw = MQ2_ERROR_VALUE;
             }
-        } else {
-            printk("[Sensor] DHT11 read failed: %d\n", ret);
         }
 
-        k_sleep(K_SECONDS(2));
+        k_msgq_put(&sensor_queue, &data, K_NO_WAIT);
+
+        k_sleep(K_SECONDS(SENSOR_INTERVAL_SECONDS));
     }
 }
 

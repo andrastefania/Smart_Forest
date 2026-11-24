@@ -35,15 +35,22 @@ Smart_Forest/
 │       ├── prj.conf
 │       ├── app.overlay
 │       └── src/main.c
+|   └──gateway/  
 └── zephyrproject/          # Local only; ignored by Git
     ├── .venv/
     ├── zephyr/
     ├── modules/
     └── build-sensor/
 ```
+## Development Branches
 
-**DHT11 wiring:** `+ → 3V3`, `OUT → D2 (P0.28)`, `− → GND`.
+- `main` – Stable project version
+- `feat/sensor-node` – Sensor acquisition, RTOS threads and local alerts
+- `feat/mesh-gateway` – Bluetooth Mesh communication and gateway
+
+Features are developed separately and integrated through pull requests.
 
 **Commands:** see [docs/development_commands.md](docs/development_commands.md).
+**Wiring:** see [docs/wiring.md](docs/wiring.md).
 
 **Safety:** MQ-2 needs 5 V power; never connect a 5 V signal directly to nRF52840 GPIO/ADC.

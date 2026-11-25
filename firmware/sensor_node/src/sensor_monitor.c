@@ -17,7 +17,7 @@ void sensor_thread(void)
         data.temperature = DHT_ERROR_VALUE;
         data.humidity = DHT_ERROR_VALUE;
         data.mq2_raw = MQ2_ERROR_VALUE;
-        data.flame_detected= false;
+        data.flame_detected= FLAME_ERROR_VALUE;
 
         if (dht11_read(&data) != 0) {
             data.temperature = DHT_ERROR_VALUE;

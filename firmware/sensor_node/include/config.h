@@ -13,8 +13,13 @@
 #define DHT_ERROR_VALUE -1000.0
 #define MQ2_ERROR_VALUE -1
 
-/* MQ-2 thresholds - to be calibrated */
+/* MQ-2 thresholds (raw ADC values - experimental) */
+#define MQ2_HIGH_THRESHOLD 250
+#define MQ2_EXTREME_THRESHOLD 400
 
-/* Flame detection - to be configured */
+/* Flame detection*/
+#define FLAME_ERROR_VALUE -1
+#define FLAME_NOT_DETECTED 0
+#define FLAME_DETECTED 1
 
 #endif

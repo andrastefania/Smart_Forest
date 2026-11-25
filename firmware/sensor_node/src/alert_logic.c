@@ -19,19 +19,29 @@ struct alert_result evaluate_alert(
             data->temperature >= TEMP_EXTREME_THRESHOLD;
     }
 
-    /* Gas thresholds - to be calibrated */
-    result.high_gas = false;
-    result.extreme_gas = false;
+    /* Gas */
+    if (data->mq2_raw != MQ2_ERROR_VALUE) {
+        result.high_gas =
+            data->mq2_raw >= MQ2_HIGH_THRESHOLD;
 
-    /* Flame detection - not yet integrated */
-    result.flame_detected = false;
+        result.extreme_gas =
+            data->mq2_raw >= MQ2_EXTREME_THRESHOLD;
+    }
 
+    /* Flame */
+    result.flame_detected = (data->flame_detected == FLAME_DETECTED);
+    
+    result.assessment_complete =
+        (data->temperature != DHT_ERROR_VALUE) &&
+        (data->mq2_raw != MQ2_ERROR_VALUE) &&
+        (data->flame_detected != FLAME_ERROR_VALUE);
     /* Count distinct hazard categories */
     int danger_count =
         (result.high_temperature || result.extreme_temperature) +
         (result.high_gas || result.extreme_gas) +
         result.flame_detected;
 
+    /* Alert level */
     if (danger_count >= 2) {
         result.level = ALERT_CRITICAL;
     } else if (danger_count == 1) {

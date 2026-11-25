@@ -17,8 +17,10 @@ void alert_thread(void)
 
         bool dht_ok = (data.temperature != DHT_ERROR_VALUE);
         bool mq2_ok = (data.mq2_raw != MQ2_ERROR_VALUE);
-
-        struct alert_result result = evaluate_alert(&data);
+        bool flame_ok =
+            (data.flame_detected != FLAME_ERROR_VALUE);
+        
+            struct alert_result result = evaluate_alert(&data);
 
         const char *status;
 
@@ -37,29 +39,57 @@ void alert_thread(void)
             break;
         }
 
-        const char *reason = "NONE";
+        /* Display sensor measurements */
+        if (dht_ok) {
+            printk("🌡️:%.2f 💧:%.2f ",
+                   data.temperature, data.humidity);
+        } else {
+            printk("🌡️:N/A 💧:N/A ");
+        }
+
+        if (mq2_ok) {
+            printk("💨:%d ", data.mq2_raw);
+        } else {
+            printk("💨:N/A ");
+        }
+
+        if (flame_ok) {
+            printk("🔥:%d ", data.flame_detected);
+        } else {
+            printk("🔥:N/A ");
+        }
+
+        printk("S:%s R:", status);
+
+        /* Display alert reasons */
+        bool has_reason = false;
 
         if (result.extreme_temperature) {
-            reason = "EXTREME_TEMP";
+            printk("EXTREME_TEMP");
+            has_reason = true;
         } else if (result.high_temperature) {
-            reason = "HIGH_TEMP";
+            printk("HIGH_TEMP");
+            has_reason = true;
         }
 
-        if (dht_ok && mq2_ok) {
-            printk("T:%.2f H:%.2f G:%d S:%s R:%s\n",
-                   data.temperature, data.humidity,
-                   data.mq2_raw, status, reason);
-        } else if (dht_ok) {
-            printk("T:%.2f H:%.2f G:N/A S:%s R:%s\n",
-                   data.temperature, data.humidity,
-                   status, reason);
-        } else if (mq2_ok) {
-            printk("T:N/A H:N/A G:%d S:%s R:%s\n",
-                   data.mq2_raw, status, reason);
-        } else {
-            printk("T:N/A H:N/A G:N/A S:%s R:%s\n",
-                   status, reason);
+        if (result.extreme_gas) {
+            printk("%sEXTREME_GAS", has_reason ? "," : "");
+            has_reason = true;
+        } else if (result.high_gas) {
+            printk("%sHIGH_GAS", has_reason ? "," : "");
+            has_reason = true;
         }
+
+        if (result.flame_detected) {
+            printk("%sFLAME", has_reason ? "," : "");
+            has_reason = true;
+        }
+
+        if (!has_reason) {
+            printk("NONE");
+        }
+
+        printk("\n");
     }
 }
 

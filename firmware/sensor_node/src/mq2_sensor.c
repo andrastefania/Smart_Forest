@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "mq2_sensor.h"
+#include "sensor_data.h"
 
 #define ADC_NODE DT_PATH(zephyr_user)
 

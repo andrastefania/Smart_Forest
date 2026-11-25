@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "dht11_sensor.h"
+#include "sensor_data.h"
 
 #define DHT_NODE DT_ALIAS(dht0)
 

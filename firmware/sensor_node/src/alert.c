@@ -18,15 +18,7 @@ void alert_thread(void)
         bool dht_ok = (data.temperature != DHT_ERROR_VALUE);
         bool mq2_ok = (data.mq2_raw != MQ2_ERROR_VALUE);
 
-        struct alert_conditions conditions = {
-            .high_temperature = dht_ok &&
-                                data.temperature >= WARNING_TEMP,
-            .gas_detected = false,
-            .flame_detected = false,
-            .assessment_complete = false
-        };
-
-        struct alert_result result = evaluate_alert(&conditions);
+        struct alert_result result = evaluate_alert(&data);
 
         const char *status;
 
@@ -45,21 +37,25 @@ void alert_thread(void)
             break;
         }
 
-        
-        const char *reason = result.causes.high_temperature
-                         ? "HIGH_TEMP" : "NONE";
+        const char *reason = "NONE";
+
+        if (result.extreme_temperature) {
+            reason = "EXTREME_TEMP";
+        } else if (result.high_temperature) {
+            reason = "HIGH_TEMP";
+        }
 
         if (dht_ok && mq2_ok) {
             printk("T:%.2f H:%.2f G:%d S:%s R:%s\n",
-                data.temperature, data.humidity,
-                data.mq2_raw, status, reason);
+                   data.temperature, data.humidity,
+                   data.mq2_raw, status, reason);
         } else if (dht_ok) {
             printk("T:%.2f H:%.2f G:N/A S:%s R:%s\n",
-                data.temperature, data.humidity,
-                status, reason);
+                   data.temperature, data.humidity,
+                   status, reason);
         } else if (mq2_ok) {
             printk("T:N/A H:N/A G:%d S:%s R:%s\n",
-                data.mq2_raw, status, reason);
+                   data.mq2_raw, status, reason);
         } else {
             printk("T:N/A H:N/A G:N/A S:%s R:%s\n",
                    status, reason);

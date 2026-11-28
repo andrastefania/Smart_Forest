@@ -29,20 +29,24 @@ struct alert_result evaluate_alert(
     }
 
     /* Flame */
-    result.flame_detected = (data->flame_detected == FLAME_DETECTED);
-    
+    result.flame_detected =
+        (data->flame_detected == FLAME_DETECTED);
+
+    /* Check if all sensors provided valid measurements */
     result.assessment_complete =
         (data->temperature != DHT_ERROR_VALUE) &&
         (data->mq2_raw != MQ2_ERROR_VALUE) &&
-        (data->flame_detected != FLAME_ERROR_VALUE);
+        (data->flame_detected == FLAME_NOT_DETECTED ||
+         data->flame_detected == FLAME_DETECTED);
+
     /* Count distinct hazard categories */
     int danger_count =
         (result.high_temperature || result.extreme_temperature) +
         (result.high_gas || result.extreme_gas) +
         result.flame_detected;
 
-    /* Alert level */
-    if (danger_count >= 2) {
+    /* Determine alert level */
+    if (result.flame_detected || danger_count >= 2) {
         result.level = ALERT_CRITICAL;
     } else if (danger_count == 1) {
         result.level = ALERT_WARNING;

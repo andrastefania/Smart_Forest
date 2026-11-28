@@ -3,7 +3,11 @@
 #define APP_CONFIG_H
 
 /* Sensor sampling */
-#define SENSOR_INTERVAL_SECONDS 2
+#define SENSOR_INTERVAL_SECONDS 10
+
+#define MQ2_COUNTER 20
+#define MQ2_DELAY 20
+#define MQ2_MINIMUM_VALID_RFEADINGS 15
 
 /* Temperature thresholds (Celsius) */
 #define TEMP_HIGH_THRESHOLD 35.0
